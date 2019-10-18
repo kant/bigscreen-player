@@ -153,7 +153,9 @@ define('bigscreenplayer/playbackstrategy/libde265strategy',
         isEnded: function () {
           return isEnded;
         },
-        isPaused: isPaused,
+        isPaused: function () {
+          // TODO
+        },
         pause: function (opts) {
           // TODO
         },
