@@ -3,7 +3,9 @@ function () {
   'use strict';
   var chronicle = [];
   var firstTimeElement;
+  var firstFpsElement;
   var compressTime;
+  var compressFps;
   var updateCallbacks = [];
 
   var TYPES = {
@@ -12,6 +14,7 @@ function () {
     EVENT: 'event',
     APICALL: 'apicall',
     TIME: 'time',
+    FPS: 'fps',
     KEYVALUE: 'keyvalue'
   };
 
@@ -21,7 +24,9 @@ function () {
 
   function clear () {
     firstTimeElement = true;
+    firstFpsElement = true;
     compressTime = false;
+    compressFps = false;
     chronicle = [];
   }
 
@@ -66,6 +71,20 @@ function () {
     }
   }
 
+  function fps (fps) {
+    if (firstFpsElement) {
+      pushToChronicle({type: TYPES.FPS, fps: fps});
+      firstFpsElement = false;
+    } else if (!compressFps) {
+      pushToChronicle({type: TYPES.FPS, fps: fps});
+      compressFps = true;
+    } else {
+      var lastElement = chronicle.pop();
+      lastElement.fps = fps;
+      pushToChronicle(lastElement);
+    }
+  }
+
   function keyValue (obj) {
     pushToChronicle({type: TYPES.KEYVALUE, keyvalue: obj});
   }
@@ -79,9 +98,11 @@ function () {
   }
 
   function pushToChronicle (obj) {
-    if (obj.type !== TYPES.TIME) {
+    if (obj.type !== TYPES.TIME && obj.type !== TYPES.FPS) {
       firstTimeElement = true;
       compressTime = false;
+      firstFpsElement = true;
+      compressFps = false;
     }
     timestamp(obj);
     chronicle.push(obj);
@@ -107,6 +128,7 @@ function () {
     event: event,
     apicall: apicall,
     time: time,
+    fps: fps,
     keyValue: keyValue,
     retrieve: retrieve,
     tearDown: tearDown,

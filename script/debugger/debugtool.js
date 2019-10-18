@@ -60,6 +60,7 @@ define('bigscreenplayer/debugger/debugtool',
        error: Chronicle.error,
        event: Chronicle.event,
        time: Chronicle.time,
+       fps: Chronicle.fps,
        apicall: Chronicle.apicall,
        keyValue: updateKeyValue,
        tearDown: tearDown

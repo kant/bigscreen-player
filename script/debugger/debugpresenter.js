@@ -46,6 +46,8 @@ define('bigscreenplayer/debugger/debugpresenter',
            return dateString + ' - Info: ' + log.message;
          case Chronicle.TYPES.TIME:
            return dateString + ' - Video time: ' + parseFloat(log.currentTime).toFixed(2);
+          case Chronicle.TYPES.FPS:
+           return dateString + ' - FPS: ' + parseFloat(log.fps).toFixed(2);
          case Chronicle.TYPES.EVENT:
            return dateString + ' - Event: ' + convertToReadableEvent(log.event.state);
          case Chronicle.TYPES.ERROR:
