@@ -1,2 +1,4 @@
 /spec/lib/
 /docs/
+/script/lib
+/script/playbackstrategy/libde265strategy.js
