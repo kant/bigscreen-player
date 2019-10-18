@@ -98,6 +98,9 @@ define('bigscreenplayer/playbackstrategy/libde265strategy',
           // TODO: Implement playbackTime handling
 
           canvasElement = document.createElement('canvas');
+          canvasElement.style.position = 'absolute';
+          canvasElement.style.width = '100%';
+          canvasElement.style.height = '100%';
           playbackElement.insertBefore(canvasElement, playbackElement.firstChild);
 
           player = new libde265.RawPlayer(canvasElement);
