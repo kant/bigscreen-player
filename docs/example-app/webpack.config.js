@@ -17,12 +17,17 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
+        exclude: /\lib\/libde265$/,
         loader: 'babel-loader',
         options: {
           presets: [
             'env'
           ]
         }
+      },
+      {
+        test: /lib\/libde265/,
+        use: [ 'script-loader' ]
       }
     ]
   }

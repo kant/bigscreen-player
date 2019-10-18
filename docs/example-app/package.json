@@ -8,12 +8,13 @@
     "start": "http-server ../ -c -1"
   },
   "devDependencies": {
-    "webpack": "4.20.2",
-    "webpack-cli": "3.1.2",
     "babel-cli": "6.26.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
-    "babel-preset-env": "1.7.0"
+    "babel-preset-env": "1.7.0",
+    "script-loader": "^0.7.2",
+    "webpack": "4.20.2",
+    "webpack-cli": "3.1.2"
   },
   "dependencies": {
     "bigscreen-player": "latest"
