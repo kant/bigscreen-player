@@ -6,7 +6,7 @@ define(
         MSE: 'msestrategy',
         HYBRID: 'hybridstrategy',
         NATIVE: 'nativestrategy',
+        LIBDE265: 'libde265strategy',
         TAL: 'talstrategy'
       };
     });
-
