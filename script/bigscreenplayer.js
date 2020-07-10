@@ -161,6 +161,7 @@ define('bigscreenplayer/bigscreenplayer',
               bigscreenPlayerDataLoaded(playbackElement, bigscreenPlayerData, enableSubtitles, device, callbacks.onSuccess);
             },
             onError: function (error) {
+              DebugTool.info('MediaSourcesError: ' + error);
               if (callbacks.onError) {
                 callbacks.onError(error);
               }
