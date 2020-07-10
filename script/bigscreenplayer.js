@@ -168,6 +168,9 @@ define('bigscreenplayer/bigscreenplayer',
             }
           };
 
+          // TODO: TAKE THIS OUT!!!
+          toggleDebug();
+
           mediaSources = new MediaSources();
           mediaSources.init(bigscreenPlayerData.media.urls, serverDate, windowType, getLiveSupport(device), mediaSourceCallbacks);
         },
