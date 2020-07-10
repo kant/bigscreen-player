@@ -1,6 +1,6 @@
 define(
-  'bigscreenplayer/utils/loadurl',
-  function () {
+  'bigscreenplayer/utils/loadurl', ['bigscreenplayer/debugger/debugtool'],
+  function (DebugTool) {
     'use strict';
 
     return function (url, opts) {
@@ -9,7 +9,12 @@ define(
         xhr.timeout = opts.timeout;
       }
       xhr.onreadystatechange = function () {
+        DebugTool.info('ReadyStateChange');
         if (xhr.readyState === 4) {
+          DebugTool.info('readyState:' + xhr.readyState);
+          DebugTool.info('status:' + xhr.status);
+          DebugTool.info('responseText:' + xhr.responseText);
+          DebugTool.info('readyState:' + xhr.readyState);
           xhr.onreadystatechange = null;
           if (xhr.status >= 200 && xhr.status < 300) {
             if (opts.onLoad) {
