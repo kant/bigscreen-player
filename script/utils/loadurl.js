@@ -9,12 +9,9 @@ define(
         xhr.timeout = opts.timeout;
       }
       xhr.onreadystatechange = function () {
-        DebugTool.info('ReadyStateChange');
         if (xhr.readyState === 4) {
-          DebugTool.info('readyState:' + xhr.readyState);
-          DebugTool.info('status:' + xhr.status);
-          DebugTool.info('responseText:' + xhr.responseText);
-          DebugTool.info('readyState:' + xhr.readyState);
+          var logObj = {status: xhr.status, readyState: xhr.readyState, responseText: xhr.responseText};
+          DebugTool.info('xhr state:' + JSON.stringify(logObj));
           xhr.onreadystatechange = null;
           if (xhr.status >= 200 && xhr.status < 300) {
             if (opts.onLoad) {
