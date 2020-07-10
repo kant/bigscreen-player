@@ -2,9 +2,10 @@ define(
   'bigscreenplayer/manifest/manifestloader', [
     'bigscreenplayer/manifest/manifestparser',
     'bigscreenplayer/models/transferformats',
-    'bigscreenplayer/utils/loadurl'
+    'bigscreenplayer/utils/loadurl',
+    'bigscreenplayer/debugger/debugtool'
   ],
-  function (ManifestParser, TransferFormats, LoadUrl) {
+  function (ManifestParser, TransferFormats, LoadUrl, DebugTool) {
     'use strict';
 
     function retrieveDashManifest (url, dateWithOffset, callbacks) {

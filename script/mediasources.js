@@ -119,7 +119,8 @@ define('bigscreenplayer/mediasources',
           callbacks.onError({error: 'manifest'});
         };
 
-        var onManifestLoadError = function () {
+        var onManifestLoadError = function (message) {
+          DebugTool.info(message);
           failover(load, failoverError, {errorMessage: 'manifest-load', isBufferingTimeoutError: false});
         };
 

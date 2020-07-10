@@ -161,7 +161,6 @@ define('bigscreenplayer/bigscreenplayer',
               bigscreenPlayerDataLoaded(playbackElement, bigscreenPlayerData, enableSubtitles, device, callbacks.onSuccess);
             },
             onError: function (error) {
-              DebugTool.info('MediaSourcesError: ' + error);
               if (callbacks.onError) {
                 callbacks.onError(error);
               }
@@ -169,7 +168,7 @@ define('bigscreenplayer/bigscreenplayer',
           };
 
           // TODO: TAKE THIS OUT!!!
-          toggleDebug();
+          DebugTool.toggleVisibility();
 
           mediaSources = new MediaSources();
           mediaSources.init(bigscreenPlayerData.media.urls, serverDate, windowType, getLiveSupport(device), mediaSourceCallbacks);
