@@ -1,35 +1,51 @@
 define('bigscreenplayer/captions',
   [
     'bigscreenplayer/debugger/debugtool',
-    'bigscreenplayer/domhelpers'
+    'bigscreenplayer/domhelpers',
+    'imsc'
   ],
-  function (DebugTool, DOMHelpers) {
+  function (DebugTool, DOMHelpers, IMSC) {
     'use strict';
 
-    var elementToStyleMap = [
-      {
-        attribute: 'tts:color',
-        property: 'color'
-      }, {
-        attribute: 'tts:backgroundColor',
-        property: 'text-shadow'
-      }, {
-        attribute: 'tts:fontStyle',
-        property: 'font-style'
-      }, {
-        attribute: 'tts:textAlign',
-        property: 'text-align'
-      }
-    ];
+    var generateISD = IMSC.generateISD;
+    var fromXML = IMSC.fromXML;
+    var renderHTML = IMSC.renderHTML;
+
+    // var elementToStyleMap = [
+    //   {
+    //     attribute: 'tts:color',
+    //     property: 'color'
+    //   }, {
+    //     attribute: 'tts:backgroundColor',
+    //     property: 'text-shadow'
+    //   }, {
+    //     attribute: 'tts:fontStyle',
+    //     property: 'font-style'
+    //   }, {
+    //     attribute: 'tts:textAlign',
+    //     property: 'text-align'
+    //   }
+    // ];
 
     var Captions = function (id, uri, media) {
-      var timedItems = [];
-      var liveItems = [];
-      var iterator = 0;
-      var _styles = {};
-      var lastTimeSeen = 0;
+      // var timedItems = [];
+      // var liveItems = [];
+      // var iterator = 0;
+      // var _styles = {};
+      // var lastTimeSeen = 0;
       var interval = 0;
       var outputElement;
+      var currentElement;
+      var previousState;
+      var xml;
+
+      if (!outputElement) {
+        outputElement = document.createElement('div');
+        outputElement.id = id;
+        outputElement.style.position = 'absolute';
+        outputElement.style.width = '100%';
+        outputElement.style.height = '100%';
+      }
 
       loadData(uri);
 
@@ -42,9 +58,15 @@ define('bigscreenplayer/captions',
           if (req.readyState === 4) {
             req.onreadystatechange = null;
             if (req.status >= 200 && req.status < 300) {
-              if (req.responseXML) {
+              if (req.response) {
                 try {
-                  transformXML(req.responseXML);
+                  // transformXML(req.responseXML);
+                  // fromXML(xmlstring, errorHandler, metadataHandler)
+                  xml = fromXML(req.responseText, function (error) {
+                    DebugTool.info(error);
+                  }, function (error) {
+                    DebugTool.info(error);
+                  });
                 } catch (e) {
                   DebugTool.info('Error transforming captions response: ' + e);
                 }
@@ -64,11 +86,6 @@ define('bigscreenplayer/captions',
       }
 
       function render () {
-        if (!outputElement) {
-          outputElement = document.createElement('div');
-          outputElement.id = id;
-        }
-
         return outputElement;
       }
 
@@ -85,7 +102,7 @@ define('bigscreenplayer/captions',
           outputElement.style.display = 'none';
         }
 
-        cleanOldCaptions(media.getDuration());
+        // cleanOldCaptions(media.getDuration());
         clearInterval(interval);
       }
 
@@ -95,275 +112,281 @@ define('bigscreenplayer/captions',
         }
 
         var time = media.getCurrentTime();
-        updateCaptions(time);
-      }
 
-      function isEBUDistribution (metadata) {
-        return metadata === 'urn:ebu:tt:distribution:2014-01' || metadata === 'urn:ebu:tt:distribution:2018-04';
-      }
-
-      function transformXML (xml) {
-        // Use .getElementsByTagNameNS() when parsing XML as some implementations of .getElementsByTagName() will lowercase its argument before proceding
-        var conformsToStandardElements = Array.prototype.slice.call(xml.getElementsByTagNameNS('urn:ebu:tt:metadata', 'conformsToStandard'));
-        var isEBUTTD = conformsToStandardElements && conformsToStandardElements.some(function (node) {
-          return isEBUDistribution(node.textContent);
-        });
-
-        var captionValues = {
-          ttml: {
-            namespace: 'http://www.w3.org/2006/10/ttaf1',
-            idAttribute: 'id'
-          },
-          ebuttd: {
-            namespace: 'http://www.w3.org/ns/ttml',
-            idAttribute: 'xml:id'
-          }
-        };
-
-        var captionStandard = isEBUTTD ? captionValues.ebuttd : captionValues.ttml;
-        var styles = _styles;
-        var styleElements = xml.getElementsByTagNameNS(captionStandard.namespace, 'style');
-
-        var max = styleElements.length;
-        // We should get at least one each time. If we don't, then the data
-        // is broken or structured in a way this can't cope with.
-        // This prevents an infinite loop.
-        var seenNonOk = false;
-        do {
-          for (var i = 0, j = styleElements.length; i < j; i++) {
-            var se = styleElements[i];
-            if (se.ok) {
-              continue;
-            }
-
-            var id = se.getAttribute(captionStandard.idAttribute);
-            var myStyles = elementToStyle(se);
-
-            if (myStyles) {
-              styles[id] = myStyles;
-              se.ok = true;
-            } else {
-              seenNonOk = true;
-            }
-          }
-        } while (seenNonOk && max--);
-
-        var body = xml.getElementsByTagNameNS(captionStandard.namespace, 'body')[0];
-        var s = elementToStyle(body);
-        var d = document.createElement('div');
-        d.setAttribute('style', s);
-        d.style.cssText = s;
-
-        if (!outputElement) {
-          outputElement = document.createElement('div');
-          outputElement.id = id;
+        // generateISD(tt, offset, errorHandler)
+        var isd = generateISD(xml, time);
+        if (currentElement) {
+          DOMHelpers.safeRemoveElement(currentElement);
         }
 
-        outputElement.appendChild(d);
-        outputElement = d;
+        currentElement = document.createElement('div');
+        outputElement.appendChild(currentElement);
+        // renderHTML(isd, element, imgResolver, eheight, ewidth, displayForcedOnlyMode, errorHandler, previousISDState, enableRollUp)
+        previousState = renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, previousState, true);
 
-        var ps = xml.getElementsByTagNameNS(captionStandard.namespace, 'p');
-        var items = [];
-
-        for (var k = 0, m = ps.length; k < m; k++) {
-          items.push(TimedPiece(ps[k], elementToStyle));
-        }
-
-        timedItems = items;
-        liveItems = [];
-        return items;
+        // updateCaptions(time);
       }
 
-      function rgbWithOpacity (value) {
-        if (DOMHelpers.isRGBA(value)) {
-          var opacity = parseInt(value.slice(7, 9), 16) / 255;
-          if (isNaN(opacity)) {
-            opacity = 1.0;
-          }
-          value = DOMHelpers.rgbaToRGB(value);
-          value += '; opacity: ' + opacity + ';';
-        }
-        return value;
-      }
+      // function isEBUDistribution (metadata) {
+      //   return metadata === 'urn:ebu:tt:distribution:2014-01' || metadata === 'urn:ebu:tt:distribution:2018-04';
+      // }
 
-      function elementToStyle (el) {
-        var stringStyle = '';
-        var styles = _styles;
-        var inherit = el.getAttribute('style');
-        if (inherit) {
-          if (styles[inherit]) {
-            stringStyle = styles[inherit];
-          } else {
-            return false;
-          }
-        }
-        for (var i = 0, j = elementToStyleMap.length; i < j; i++) {
-          var map = elementToStyleMap[i];
-          var value = el.getAttribute(map.attribute);
-          if (value === null || value === undefined) {
-            continue;
-          }
-          if (map.conversion) {
-            value = map.conversion(value);
-          }
+      // function transformXML (xml) {
+      //   // Use .getElementsByTagNameNS() when parsing XML as some implementations of .getElementsByTagName() will lowercase its argument before proceding
+      //   var conformsToStandardElements = Array.prototype.slice.call(xml.getElementsByTagNameNS('urn:ebu:tt:metadata', 'conformsToStandard'));
+      //   var isEBUTTD = conformsToStandardElements && conformsToStandardElements.some(function (node) {
+      //     return isEBUDistribution(node.textContent);
+      //   });
 
-          if (map.attribute === 'tts:backgroundColor') {
-            value = rgbWithOpacity(value);
-            value += ' 2px 2px 1px';
-          }
+      //   var captionValues = {
+      //     ttml: {
+      //       namespace: 'http://www.w3.org/2006/10/ttaf1',
+      //       idAttribute: 'id'
+      //     },
+      //     ebuttd: {
+      //       namespace: 'http://www.w3.org/ns/ttml',
+      //       idAttribute: 'xml:id'
+      //     }
+      //   };
 
-          if (map.attribute === 'tts:color') {
-            value = rgbWithOpacity(value);
-          }
+      //   var captionStandard = isEBUTTD ? captionValues.ebuttd : captionValues.ttml;
+      //   var styles = _styles;
+      //   var styleElements = xml.getElementsByTagNameNS(captionStandard.namespace, 'style');
 
-          stringStyle += map.property + ': ' + value + '; ';
-        }
+      //   var max = styleElements.length;
+      //   // We should get at least one each time. If we don't, then the data
+      //   // is broken or structured in a way this can't cope with.
+      //   // This prevents an infinite loop.
+      //   var seenNonOk = false;
+      //   do {
+      //     for (var i = 0, j = styleElements.length; i < j; i++) {
+      //       var se = styleElements[i];
+      //       if (se.ok) {
+      //         continue;
+      //       }
 
-        return stringStyle;
-      }
+      //       var id = se.getAttribute(captionStandard.idAttribute);
+      //       var myStyles = elementToStyle(se);
 
-      function groupUnseenFor (time) {
-        // Basic approach first.
-        // TODO - seek backwards and do fast seeking if long timestamp
-        // differences. Also add a cache for last timestamp seen. If next time is older, reset.
-        var it;
-        if (time < lastTimeSeen) {
-          it = 0;
-        } else {
-          it = iterator || 0;
-        }
-        lastTimeSeen = time;
-        var itms = timedItems;
-        var max = itms.length;
+      //       if (myStyles) {
+      //         styles[id] = myStyles;
+      //         se.ok = true;
+      //       } else {
+      //         seenNonOk = true;
+      //       }
+      //     }
+      //   } while (seenNonOk && max--);
 
-        // The current iterated item was not returned last time.
-        // If its time has not come, we return nothing.
-        var ready = [];
-        var itm = itms[it];
-        while (it !== max && itm.start < time) {
-          if (itm.end > time) {
-            ready.push(itm);
-          }
-          it++;
-          itm = itms[it];
-        }
-        iterator = it;
+      //   var body = xml.getElementsByTagNameNS(captionStandard.namespace, 'body')[0];
+      //   var s = elementToStyle(body);
+      //   var d = document.createElement('div');
+      //   d.setAttribute('style', s);
+      //   d.style.cssText = s;
 
-        return ready;
-      }
+      //   if (!outputElement) {
+      //     outputElement = document.createElement('div');
+      //     outputElement.id = id;
+      //   }
 
-      function updateCaptions (time) {
-        // Clear out old captions
-        cleanOldCaptions(time);
-        // Add new captions
-        addNewCaptions(time);
-      }
+      //   outputElement.appendChild(d);
+      //   outputElement = d;
 
-      function cleanOldCaptions (time) {
-        var live = liveItems;
-        for (var i = live.length - 1; i >= 0; i--) {
-          if (live[i].removeFromDomIfExpired(time)) {
-            live.splice(i, 1);
-          }
-        }
-      }
+      //   var ps = xml.getElementsByTagNameNS(captionStandard.namespace, 'p');
+      //   var items = [];
 
-      function addNewCaptions (time) {
-        var live = liveItems;
-        var fresh = groupUnseenFor(time);
-        liveItems = live.concat(fresh);
-        for (var i = 0, j = fresh.length; i < j; i++) {
-          fresh[i].addToDom(outputElement);
-        }
-      }
+      //   for (var k = 0, m = ps.length; k < m; k++) {
+      //     items.push(TimedPiece(ps[k], elementToStyle));
+      //   }
+
+      //   timedItems = items;
+      //   liveItems = [];
+      //   return items;
+      // }
+
+      // function rgbWithOpacity (value) {
+      //   if (DOMHelpers.isRGBA(value)) {
+      //     var opacity = parseInt(value.slice(7, 9), 16) / 255;
+      //     if (isNaN(opacity)) {
+      //       opacity = 1.0;
+      //     }
+      //     value = DOMHelpers.rgbaToRGB(value);
+      //     value += '; opacity: ' + opacity + ';';
+      //   }
+      //   return value;
+      // }
+
+      // function elementToStyle (el) {
+      //   var stringStyle = '';
+      //   var styles = _styles;
+      //   var inherit = el.getAttribute('style');
+      //   if (inherit) {
+      //     if (styles[inherit]) {
+      //       stringStyle = styles[inherit];
+      //     } else {
+      //       return false;
+      //     }
+      //   }
+      //   for (var i = 0, j = elementToStyleMap.length; i < j; i++) {
+      //     var map = elementToStyleMap[i];
+      //     var value = el.getAttribute(map.attribute);
+      //     if (value === null || value === undefined) {
+      //       continue;
+      //     }
+      //     if (map.conversion) {
+      //       value = map.conversion(value);
+      //     }
+
+      //     if (map.attribute === 'tts:backgroundColor') {
+      //       value = rgbWithOpacity(value);
+      //       value += ' 2px 2px 1px';
+      //     }
+
+      //     if (map.attribute === 'tts:color') {
+      //       value = rgbWithOpacity(value);
+      //     }
+
+      //     stringStyle += map.property + ': ' + value + '; ';
+      //   }
+
+      //   return stringStyle;
+      // }
+
+      // function groupUnseenFor (time) {
+      //   // Basic approach first.
+      //   // TODO - seek backwards and do fast seeking if long timestamp
+      //   // differences. Also add a cache for last timestamp seen. If next time is older, reset.
+      //   var it;
+      //   if (time < lastTimeSeen) {
+      //     it = 0;
+      //   } else {
+      //     it = iterator || 0;
+      //   }
+      //   lastTimeSeen = time;
+      //   var itms = timedItems;
+      //   var max = itms.length;
+
+      //   // The current iterated item was not returned last time.
+      //   // If its time has not come, we return nothing.
+      //   var ready = [];
+      //   var itm = itms[it];
+      //   while (it !== max && itm.start < time) {
+      //     if (itm.end > time) {
+      //       ready.push(itm);
+      //     }
+      //     it++;
+      //     itm = itms[it];
+      //   }
+      //   iterator = it;
+
+      //   return ready;
+      // }
+
+      // function updateCaptions (time) {
+      //   // Clear out old captions
+      //   cleanOldCaptions(time);
+      //   // Add new captions
+      //   addNewCaptions(time);
+      // }
+
+      // function cleanOldCaptions (time) {
+      //   var live = liveItems;
+      //   for (var i = live.length - 1; i >= 0; i--) {
+      //     if (live[i].removeFromDomIfExpired(time)) {
+      //       live.splice(i, 1);
+      //     }
+      //   }
+      // }
+
+      // function addNewCaptions (time) {
+      //   var live = liveItems;
+      //   var fresh = groupUnseenFor(time);
+      //   liveItems = live.concat(fresh);
+      //   for (var i = 0, j = fresh.length; i < j; i++) {
+      //     fresh[i].addToDom(outputElement);
+      //   }
+      // }
 
       return {
         render: render,
         start: start,
         stop: stop,
         update: update,
-        loadData: loadData,
-        transformXML: transformXML,
-        elementToStyle: elementToStyle,
-        groupUnseenFor: groupUnseenFor,
-        updateCaptions: updateCaptions,
-        cleanOldCaptions: cleanOldCaptions,
-        addNewCaptions: addNewCaptions
+        loadData: loadData
       };
     };
 
-    var TimedPiece = function (timedPieceNode, toStyleFunc) {
-      var start = timeStampToSeconds(timedPieceNode.getAttribute('begin'));
-      var end = timeStampToSeconds(timedPieceNode.getAttribute('end'));
-      var _node = timedPieceNode;
-      var htmlElementNode;
+    // var TimedPiece = function (timedPieceNode, toStyleFunc) {
+    //   var start = timeStampToSeconds(timedPieceNode.getAttribute('begin'));
+    //   var end = timeStampToSeconds(timedPieceNode.getAttribute('end'));
+    //   var _node = timedPieceNode;
+    //   var htmlElementNode;
 
-      function timeStampToSeconds (timeStamp) {
-        var timePieces = timeStamp.split(':');
-        var timeSeconds = parseFloat(timePieces.pop(), 10);
-        if (timePieces.length) {
-          timeSeconds += 60 * parseInt(timePieces.pop(), 10);
-        }
-        if (timePieces.length) {
-          timeSeconds += 60 * 60 * parseInt(timePieces.pop(), 10);
-        }
-        return timeSeconds;
-      }
+    //   function timeStampToSeconds (timeStamp) {
+    //     var timePieces = timeStamp.split(':');
+    //     var timeSeconds = parseFloat(timePieces.pop(), 10);
+    //     if (timePieces.length) {
+    //       timeSeconds += 60 * parseInt(timePieces.pop(), 10);
+    //     }
+    //     if (timePieces.length) {
+    //       timeSeconds += 60 * 60 * parseInt(timePieces.pop(), 10);
+    //     }
+    //     return timeSeconds;
+    //   }
 
-      function removeFromDomIfExpired (time) {
-        if (time > end || time < start) {
-          DOMHelpers.safeRemoveElement(htmlElementNode);
-          return true;
-        }
-        return false;
-      }
+    //   function removeFromDomIfExpired (time) {
+    //     if (time > end || time < start) {
+    //       DOMHelpers.safeRemoveElement(htmlElementNode);
+    //       return true;
+    //     }
+    //     return false;
+    //   }
 
-      function addToDom (parentNode) {
-        var node = htmlElementNode || generateHtmlElementNode();
-        parentNode.appendChild(node);
-      }
+    //   function addToDom (parentNode) {
+    //     var node = htmlElementNode || generateHtmlElementNode();
+    //     parentNode.appendChild(node);
+    //   }
 
-      function generateHtmlElementNode (node) {
-        var source = node || _node;
+    //   function generateHtmlElementNode (node) {
+    //     var source = node || _node;
 
-        var localName = source.localName || source.tagName;
-        var html = document.createElement(localName);
-        var style = toStyleFunc(source);
-        if (style) {
-          html.setAttribute('style', style);
-          html.style.cssText = style;
-        }
+    //     var localName = source.localName || source.tagName;
+    //     var html = document.createElement(localName);
+    //     var style = toStyleFunc(source);
+    //     if (style) {
+    //       html.setAttribute('style', style);
+    //       html.style.cssText = style;
+    //     }
 
-        if (localName === 'p') {
-          html.style.margin = '0px';
-        }
+    //     if (localName === 'p') {
+    //       html.style.margin = '0px';
+    //     }
 
-        for (var i = 0, j = source.childNodes.length; i < j; i++) {
-          var n = source.childNodes[i];
-          if (n.nodeType === 3) {
-            html.appendChild(document.createTextNode(n.data));
-          } else if (n.nodeType === 1) {
-            html.appendChild(generateHtmlElementNode(n));
-          }
-        }
-        if (!node) {
-          htmlElementNode = html;
-        }
+    //     for (var i = 0, j = source.childNodes.length; i < j; i++) {
+    //       var n = source.childNodes[i];
+    //       if (n.nodeType === 3) {
+    //         html.appendChild(document.createTextNode(n.data));
+    //       } else if (n.nodeType === 1) {
+    //         html.appendChild(generateHtmlElementNode(n));
+    //       }
+    //     }
+    //     if (!node) {
+    //       htmlElementNode = html;
+    //     }
 
-        return html;
-      }
+    //     return html;
+    //   }
 
-      return {
-        node: timedPieceNode,
-        start: start,
-        end: end,
+    //   return {
+    //     node: timedPieceNode,
+    //     start: start,
+    //     end: end,
 
-        timeStampToSeconds: timeStampToSeconds,
-        removeFromDomIfExpired: removeFromDomIfExpired,
-        addToDom: addToDom,
-        generateHtmlElementNode: generateHtmlElementNode
-      };
-    };
+    //     timeStampToSeconds: timeStampToSeconds,
+    //     removeFromDomIfExpired: removeFromDomIfExpired,
+    //     addToDom: addToDom,
+    //     generateHtmlElementNode: generateHtmlElementNode
+    //   };
+    // };
 
     return Captions;
   });

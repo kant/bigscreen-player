@@ -14,6 +14,10 @@ define(
       container.id = 'playerCaptionsContainer';
       DOMHelpers.addClass(container, 'playerCaptions');
 
+      container.style.position = 'absolute';
+      container.style.width = '100%';
+      container.style.height = '100%';
+
       if (captionsURL) {
         captions = new Captions('playerCaptions', captionsURL, mediaPlayer, container);
         container.appendChild(captions.render());
@@ -38,23 +42,23 @@ define(
       }
 
       function updatePosition (transportControlPosition) {
-        var classes = {
-          controlsVisible: TransportControlPosition.CONTROLS_ONLY,
-          controlsWithInfoVisible: TransportControlPosition.CONTROLS_WITH_INFO,
-          leftCarouselVisible: TransportControlPosition.LEFT_CAROUSEL,
-          bottomCarouselVisible: TransportControlPosition.BOTTOM_CAROUSEL
-        };
+        // var classes = {
+        //   controlsVisible: TransportControlPosition.CONTROLS_ONLY,
+        //   controlsWithInfoVisible: TransportControlPosition.CONTROLS_WITH_INFO,
+        //   leftCarouselVisible: TransportControlPosition.LEFT_CAROUSEL,
+        //   bottomCarouselVisible: TransportControlPosition.BOTTOM_CAROUSEL
+        // };
 
-        for (var cssClassName in classes) {
-          if (classes.hasOwnProperty(cssClassName)) {
-            // Allow multiple flags to be set at once
-            if ((classes[cssClassName] & transportControlPosition) === classes[cssClassName]) {
-              DOMHelpers.addClass(container, cssClassName);
-            } else {
-              DOMHelpers.removeClass(container, cssClassName);
-            }
-          }
-        }
+        // for (var cssClassName in classes) {
+        //   if (classes.hasOwnProperty(cssClassName)) {
+        //     // Allow multiple flags to be set at once
+        //     if ((classes[cssClassName] & transportControlPosition) === classes[cssClassName]) {
+        //       DOMHelpers.addClass(container, cssClassName);
+        //     } else {
+        //       DOMHelpers.removeClass(container, cssClassName);
+        //     }
+        //   }
+        // }
       }
 
       function tearDown () {
