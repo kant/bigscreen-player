@@ -351,6 +351,10 @@ define(
         return undefined;
       }
 
+      function onPlaying () {
+        toPlaying();
+      }
+
       function onFinishedBuffering () {
         exitBuffering();
       }
@@ -654,7 +658,7 @@ define(
 
             mediaElement.addEventListener('canplay', onFinishedBuffering, false);
             mediaElement.addEventListener('seeked', onFinishedBuffering, false);
-            mediaElement.addEventListener('playing', onFinishedBuffering, false);
+            mediaElement.addEventListener('playing', onPlaying, false);
             mediaElement.addEventListener('error', onError, false);
             mediaElement.addEventListener('ended', onEndOfMedia, false);
             mediaElement.addEventListener('waiting', onDeviceBuffering, false);

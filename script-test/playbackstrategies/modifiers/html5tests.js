@@ -1947,6 +1947,7 @@ require(
           timeupdateCallback();
 
           jasmine.clock().tick(10000);
+          mockVideoMediaElement.currentTime += 10;
 
           expect(recentEvents).not.toContain(MediaPlayerBase.EVENT.SEEK_FINISHED);
 
