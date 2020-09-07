@@ -366,7 +366,7 @@ define(
       }
 
       function onPause () {
-        DebugTool.info('Video Element definitely called pause');
+        DebugTool.info('Video Element emitted pause event');
         DebugTool.info('Video Element paused state: ' + mediaElement.paused);
 
         if (ignoreNextPauseEvent) {
