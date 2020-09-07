@@ -2,9 +2,10 @@ define(
   'bigscreenplayer/playbackstrategy/modifiers/html5',
   [
     'bigscreenplayer/playbackstrategy/modifiers/mediaplayerbase',
-    'bigscreenplayer/domhelpers'
+    'bigscreenplayer/domhelpers',
+    'bigscreenplayer/debugger/debugtool'
   ],
-  function (MediaPlayerBase, DOMHelpers) {
+  function (MediaPlayerBase, DOMHelpers, DebugTool) {
     'use strict';
 
     function Player (deviceConfig) {
@@ -365,6 +366,9 @@ define(
       }
 
       function onPause () {
+        DebugTool.info('Video Element definitely called pause');
+        DebugTool.info('Video Element paused state: ' + mediaElement.paused);
+
         if (ignoreNextPauseEvent) {
           ignoreNextPauseEvent = false;
           return;
