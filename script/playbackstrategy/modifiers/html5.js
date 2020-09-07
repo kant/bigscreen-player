@@ -574,7 +574,7 @@ define(
         if (mediaElement) {
           mediaElement.removeEventListener('canplay', onFinishedBuffering, false);
           mediaElement.removeEventListener('seeked', onFinishedBuffering, false);
-          mediaElement.removeEventListener('playing', onFinishedBuffering, false);
+          mediaElement.removeEventListener('playing', onPlaying, false);
           mediaElement.removeEventListener('error', onError, false);
           mediaElement.removeEventListener('ended', onEndOfMedia, false);
           mediaElement.removeEventListener('waiting', onDeviceBuffering, false);
