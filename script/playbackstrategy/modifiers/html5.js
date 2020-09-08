@@ -82,9 +82,9 @@ define(
       }
 
       function getDuration () {
-        DebugTool.log('getDuration()');
-        DebugTool.log('State: ' + getState() + ', Media Element Duration: ' + mediaElement ? mediaElement.duration : 'no element');
-        DebugTool.log('Source Element Duration: ' + sourceElement ? sourceElement.duration : 'no source element');
+        DebugTool.info('getDuration()');
+        DebugTool.info('State: ' + getState() + ', Media Element Duration: ' + mediaElement ? mediaElement.duration : 'no element');
+        DebugTool.info('Source Element Duration: ' + sourceElement ? sourceElement.duration : 'no source element');
         switch (getState()) {
           case MediaPlayerBase.STATE.STOPPED:
           case MediaPlayerBase.STATE.ERROR:
@@ -438,8 +438,8 @@ define(
       }
 
       function onMetadata () {
-        DebugTool.log('On Meta Data loaded - Media Element Duration: ' + mediaElement.duration);
-        DebugTool.log('On Meta Data loaded - Source Element Duration: ' + sourceElement.duration);
+        DebugTool.info('On Meta Data loaded - Media Element Duration: ' + mediaElement.duration);
+        DebugTool.info('On Meta Data loaded - Source Element Duration: ' + sourceElement.duration);
         metadataLoaded();
       }
 
