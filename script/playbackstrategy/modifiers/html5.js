@@ -82,11 +82,6 @@ define(
       }
 
       function getDuration () {
-        DebugTool.info('getDuration()');
-        var mediaElementDuration = mediaElement ? mediaElement.duration : 'no media element';
-        var sourceElementDuration = sourceElement ? sourceElement.duration : 'no source element';
-        DebugTool.info('State: ' + getState() + ', Media Element Duration: ' + mediaElementDuration);
-        DebugTool.info('Source Element Duration: ' + sourceElementDuration);
         switch (getState()) {
           case MediaPlayerBase.STATE.STOPPED:
           case MediaPlayerBase.STATE.ERROR:
