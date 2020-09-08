@@ -353,7 +353,11 @@ define(
       }
 
       function onPlaying () {
-        toPlaying();
+        if (postBufferingState === MediaPlayerBase.STATE.PAUSED) {
+          toPaused();
+        } else {
+          toPlaying();
+        }
       }
 
       function onFinishedBuffering () {
