@@ -435,8 +435,7 @@ define(
       }
 
       function onMetadata () {
-        DebugTool.info('On Meta Data loaded - Media Element Duration: ' + mediaElement && mediaElement.duration);
-        DebugTool.info('On Meta Data loaded - Source Element Duration: ' + sourceElement && sourceElement.duration);
+        DebugTool.info('On Meta Data loaded - Media Element Duration: ' + (mediaElement && mediaElement.duration));
         metadataLoaded();
       }
 
