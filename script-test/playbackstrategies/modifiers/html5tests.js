@@ -1880,6 +1880,7 @@ require(
 
         it('Seek Finished Event Emitted On Status Update When Time is Within Sentinel Threshold And The State is Playing', function () {
           player.initialiseMedia(MediaPlayerBase.TYPE.VIDEO, 'http://url/', 'video/mp4', sourceContainer, {});
+          spyOnProperty(mockVideoMediaElement, 'paused').and.returnValue(false);
 
           expect(recentEvents).toContain(MediaPlayerBase.EVENT.SEEK_ATTEMPTED);
 
@@ -1899,6 +1900,7 @@ require(
 
         it('Seek Finished Event Is Emitted Only Once', function () {
           player.initialiseMedia(MediaPlayerBase.TYPE.VIDEO, 'http://url/', 'video/mp4', sourceContainer, {});
+          spyOnProperty(mockVideoMediaElement, 'paused').and.returnValue(false);
 
           expect(recentEvents).toContain(MediaPlayerBase.EVENT.SEEK_ATTEMPTED);
 
@@ -1921,6 +1923,7 @@ require(
         });
 
         it(' Seek Finished Event Is Emitted After restartTimeout When Enabled', function () {
+          spyOnProperty(mockVideoMediaElement, 'paused').and.returnValue(false);
           var restartTimeoutConfig = {
             streaming: {
               overrides: {
