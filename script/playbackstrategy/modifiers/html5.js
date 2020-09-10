@@ -358,6 +358,7 @@ define(
         if (mediaElement.paused) {
           toPaused();
         } else {
+          DebugTool.info('onPlaying calls toPlaying');
           toPlaying();
         }
       }
@@ -458,6 +459,7 @@ define(
         } else if (postBufferingState === MediaPlayerBase.STATE.PAUSED) {
           toPaused();
         } else {
+          DebugTool.info('exitBuffering calls toPlaying');
           toPlaying();
         }
       }
@@ -715,6 +717,7 @@ define(
               targetSeekTime = getClampedTimeForPlayFrom(seconds);
               if (isNearToCurrentTime(targetSeekTime)) {
                 targetSeekTime = undefined;
+                DebugTool.info('playFrom calls toPlaying');
                 toPlaying();
               } else {
                 playFromIfReady();
@@ -803,6 +806,7 @@ define(
 
             case MediaPlayerBase.STATE.PAUSED:
               mediaElement.play();
+              DebugTool.info('resume calls toPlaying');
               toPlaying();
               break;
 
