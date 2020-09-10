@@ -353,6 +353,7 @@ define(
       }
 
       function onPlaying () {
+        DebugTool.info('onPlaying called and paused state is: ' + mediaElement.paused);
         // Playing event can be fired when 'potentially playing'. When mediaElement.paused is true,
         // it should reflect that we are meant to be in a paused state.
         if (mediaElement.paused) {
