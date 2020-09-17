@@ -7,6 +7,7 @@ define('bigscreenplayer/captions',
   function (DebugTool, DOMHelpers, IMSC) {
     'use strict';
 
+    // This requires IMSC being available at runtime
     var generateISD = IMSC.generateISD;
     var fromXML = IMSC.fromXML;
     var renderHTML = IMSC.renderHTML;
