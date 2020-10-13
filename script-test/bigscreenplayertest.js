@@ -22,8 +22,9 @@ require(
 
     var mockEventHook;
     var mockPlayerComponentInstance;
+    var mockResizer;
 
-    var mockPlayerComponent = function (playbackElement, bigscreenPlayerData, mediaSources, windowType, enableSubtitles, callback, device) {
+    var mockPlayerComponent = function (playbackElement, bigscreenPlayerData, mediaSources, windowType, enableSubtitles, callback) {
       mockEventHook = callback;
       return mockPlayerComponentInstance;
     };
@@ -52,7 +53,6 @@ require(
       options = options || {};
 
       var windowType = options.windowType || WindowTypes.STATIC;
-      var device = options.device;
       var subtitlesEnabled = options.subtitlesEnabled || false;
 
       playbackElement = document.createElement('div');
@@ -86,7 +86,7 @@ require(
       if (!noCallbacks) {
         callbacks = {onSuccess: successCallback, onError: errorCallback};
       }
-      bigscreenPlayer.init(playbackElement, bigscreenPlayerData, windowType, subtitlesEnabled, device, callbacks);
+      bigscreenPlayer.init(playbackElement, bigscreenPlayerData, windowType, subtitlesEnabled, callbacks);
     }
 
     describe('Bigscreen Player', function () {
@@ -114,17 +114,23 @@ require(
           'play', 'pause', 'isEnded', 'isPaused', 'setCurrentTime', 'getCurrentTime', 'getDuration', 'getSeekableRange',
           'getPlayerElement', 'isSubtitlesAvailable', 'isSubtitlesEnabled', 'setSubtitlesEnabled', 'tearDown',
           'getWindowStartTime', 'getWindowEndTime']);
+        mockResizer = jasmine.createSpyObj('mockResizer', ['resize', 'clear']);
         successCallback = jasmine.createSpy('successCallback');
         errorCallback = jasmine.createSpy('errorCallback');
         setupManifestData();
         liveSupport = LiveSupport.SEEKABLE;
         noCallbacks = false;
 
+        var mockResizerConstructor = function () {
+          return mockResizer;
+        };
+
         injector.mock({
           'bigscreenplayer/mediasources': mediaSourcesMock,
           'bigscreenplayer/playercomponent': mockPlayerComponent,
           'bigscreenplayer/plugins': Plugins,
-          'bigscreenplayer/debugger/debugtool': mockDebugTool
+          'bigscreenplayer/debugger/debugtool': mockDebugTool,
+          'bigscreenplayer/resizer': mockResizerConstructor
         });
 
         injector.require(['bigscreenplayer/bigscreenplayer'], function (bigscreenPlayerReference) {
@@ -140,6 +146,8 @@ require(
         successCallback.calls.reset();
         errorCallback.calls.reset();
         forceMediaSourcesConstructionFailure = false;
+        mockResizer.resize.calls.reset();
+        mockResizer.clear.calls.reset();
 
         mediaSourcesCallbackSuccessSpy && mediaSourcesCallbackSuccessSpy.calls && mediaSourcesCallbackSuccessSpy.calls.reset();
         mediaSourcesCallbackErrorSpy && mediaSourcesCallbackErrorSpy.calls && mediaSourcesCallbackErrorSpy.calls.reset();
@@ -788,6 +796,50 @@ require(
         });
       });
 
+      describe('resize', function () {
+        it('calls resizer with correct values', function () {
+          initialiseBigscreenPlayer();
+          bigscreenPlayer.resize(10, 10, 160, 90, 100);
+
+          expect(mockResizer.resize).toHaveBeenCalledWith(playbackElement, 10, 10, 160, 90, 100);
+        });
+
+        it('disables subtitles whilst resized', function () {
+          initialiseBigscreenPlayer();
+          bigscreenPlayer.resize(10, 10, 160, 90, 100);
+
+          expect(mockPlayerComponentInstance.setSubtitlesEnabled).toHaveBeenCalledWith(false);
+        });
+      });
+
+      describe('clearResize', function () {
+        it('calls resizers clear function', function () {
+          initialiseBigscreenPlayer();
+          bigscreenPlayer.clearResize();
+
+          expect(mockResizer.clear).toHaveBeenCalledWith(playbackElement);
+        });
+
+        it('enables subtitles when cleared if they were previously shown', function () {
+          initialiseBigscreenPlayer();
+          mockPlayerComponentInstance.isSubtitlesEnabled.and.returnValue(true);
+          bigscreenPlayer.resize(10, 10, 160, 90, 100);
+          bigscreenPlayer.clearResize();
+
+          expect(mockPlayerComponentInstance.setSubtitlesEnabled).toHaveBeenCalledWith(true);
+        });
+
+        it('does not enable subtitles when cleared if they were previously not shown', function () {
+          initialiseBigscreenPlayer();
+          mockPlayerComponentInstance.isSubtitlesEnabled.and.returnValue(false);
+          bigscreenPlayer.resize(10, 10, 160, 90, 100);
+          mockPlayerComponentInstance.setSubtitlesEnabled.calls.reset();
+          bigscreenPlayer.clearResize();
+
+          expect(mockPlayerComponentInstance.setSubtitlesEnabled).not.toHaveBeenCalled();
+        });
+      });
+
       describe('canSeek', function () {
         it('should return true when in VOD playback', function () {
           initialiseBigscreenPlayer();
@@ -1016,6 +1068,30 @@ require(
 
           expect(mockPlugin.onError).not.toHaveBeenCalled();
           expect(mockPluginTwo.onError).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('mock', function () {
+        afterEach(function () {
+          bigscreenPlayer.unmock();
+        });
+
+        it('should return a mock object with jasmine spies on the same interface as the main api', function () {
+          initialiseBigscreenPlayer();
+          var moduleKeys = Object.keys(bigscreenPlayer);
+          bigscreenPlayer.mockJasmine();
+          var mockKeys = Object.keys(bigscreenPlayer);
+
+          expect(mockKeys).toEqual(jasmine.objectContaining(moduleKeys));
+        });
+
+        it('should return a mock object on the same interface as the main api', function () {
+          initialiseBigscreenPlayer();
+          var moduleKeys = Object.keys(bigscreenPlayer);
+          bigscreenPlayer.mock();
+          var mockKeys = Object.keys(bigscreenPlayer);
+
+          expect(mockKeys).toEqual(jasmine.objectContaining(moduleKeys));
         });
       });
     });

@@ -1,8 +1,8 @@
-define('bigscreenplayer/captions',
+define('bigscreenplayer/subtitles/renderer',
   [
     'bigscreenplayer/debugger/debugtool',
-    'bigscreenplayer/domhelpers',
-    'imsc'
+    'bigscreenplayer/utils/loadurl',
+    'bigscreenplayer/subtitles/transformer'
   ],
   function (DebugTool, DOMHelpers, IMSC) {
     'use strict';
@@ -12,7 +12,7 @@ define('bigscreenplayer/captions',
     var fromXML = IMSC.fromXML;
     var renderHTML = IMSC.renderHTML;
 
-    var Captions = function (id, uri, media) {
+    var Renderer = function (id, uri, media) {
       var interval = 0;
       var outputElement;
       var currentElement;
@@ -111,6 +111,5 @@ define('bigscreenplayer/captions',
       };
     };
 
-    return Captions;
+    return Renderer;
   });
-
