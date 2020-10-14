@@ -2,7 +2,7 @@ define('bigscreenplayer/subtitles/renderer',
   [
     'bigscreenplayer/debugger/debugtool',
     'bigscreenplayer/utils/loadurl',
-    'bigscreenplayer/subtitles/transformer'
+    'smp-imscjs'
   ],
   function (DebugTool, DOMHelpers, IMSC) {
     'use strict';

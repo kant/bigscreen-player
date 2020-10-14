@@ -144,7 +144,7 @@ require(
         };
 
         injector.mock({
-          'dashjs': mockDashjs,
+          'smp-dashjs': mockDashjs,
           'bigscreenplayer/plugins': mockPlugins,
           'bigscreenplayer/dynamicwindowutils': mockDynamicWindowUtils,
           'bigscreenplayer/utils/timeutils': timeUtilsMock
