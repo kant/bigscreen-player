@@ -18,6 +18,10 @@ define('bigscreenplayer/subtitles/renderer',
       var currentElement;
       var previousState;
       var xml;
+      var times;
+
+      var track = TODO_NEED_MEDIA_ELEMENT.addTextTrack('captions');
+      track.mode = 'hidden';
 
       if (!outputElement) {
         outputElement = document.createElement('div');
@@ -41,6 +45,15 @@ define('bigscreenplayer/subtitles/renderer',
               if (req.response) {
                 try {
                   xml = fromXML(req.responseText, function (error) {
+                    times = xml.getTimeEvents();
+
+                    var Cue = window.VTTCue || window.TextTrackCue;
+                    for (var i = 0; i < times.length; i++) {
+                      var cue = new Cue(times[i], times[i], '');
+                      cue.onenter = function () { update(times[i]); };
+                      track.addCue(cue);
+                    }
+
                     DebugTool.info(error);
                   }, function (error) {
                     DebugTool.info(error);
@@ -83,12 +96,12 @@ define('bigscreenplayer/subtitles/renderer',
         clearInterval(interval);
       }
 
-      function update () {
+      function update (time) {
         if (!media) {
           stop();
         }
 
-        var time = media.getCurrentTime();
+        // var time = media.getCurrentTime();
 
         // generateISD(tt, offset, errorHandler)
         var isd = generateISD(xml, time);
