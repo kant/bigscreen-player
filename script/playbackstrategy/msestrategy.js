@@ -12,7 +12,7 @@ define('bigscreenplayer/playbackstrategy/msestrategy',
     'bigscreenplayer/domhelpers',
 
     // static imports
-    'dashjs'
+    'smp-dashjs'
   ],
   function (MediaState, WindowTypes, DebugTool, MediaKinds, Plugins, ManifestModifier, LiveSupport, DynamicWindowUtils, TimeUtils, DOMHelpers) {
     var MSEStrategy = function (mediaSources, windowType, mediaKind, playbackElement, isUHD) {
