@@ -53,9 +53,16 @@ define('bigscreenplayer/subtitles/renderer',
                   times = xml.getMediaTimeEvents();
 
                   var Cue = window.VTTCue || window.TextTrackCue;
+
                   for (var i = 0; i < times.length; i++) {
-                    var cue = new Cue(times[i], times[i], '');
+                    var cue;
+                    if (times[i + 1]) {
+                      cue = new Cue(times[i], times[i + 1], '');
+                    } else {
+                      cue = new Cue(times[i], times[i], '');
+                    }
                     cue.onenter = function () { update(this.startTime); };
+                    cue.onexit = function () { removeCaptionElement(); };
                     track.addCue(cue);
                   }
                 } catch (e) {
@@ -92,6 +99,12 @@ define('bigscreenplayer/subtitles/renderer',
         }
       }
 
+      function removeCaptionElement () {
+        if (currentElement) {
+          DOMHelpers.safeRemoveElement(currentElement);
+        }
+      }
+
       function update (time) {
         if (!media) {
           stop();
@@ -99,9 +112,7 @@ define('bigscreenplayer/subtitles/renderer',
 
         // generateISD(tt, offset, errorHandler)
         var isd = generateISD(xml, time);
-        if (currentElement) {
-          DOMHelpers.safeRemoveElement(currentElement);
-        }
+        removeCaptionElement();
 
         currentElement = document.createElement('div');
         currentElement.id = 'bsp_captions';
