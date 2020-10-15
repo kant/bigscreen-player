@@ -111,14 +111,23 @@ define('bigscreenplayer/subtitles/renderer',
         }
 
         // generateISD(tt, offset, errorHandler)
-        var isd = generateISD(xml, time);
+        try {
+          var isd = generateISD(xml, time);
+        } catch (e) {
+          DebugTool.info('generateISD error: ' + e);
+        }
+
         removeCaptionElement();
 
         currentElement = document.createElement('div');
         currentElement.id = 'bsp_captions';
         outputElement.appendChild(currentElement);
         // renderHTML(isd, element, imgResolver, eheight, ewidth, displayForcedOnlyMode, errorHandler, previousISDState, enableRollUp)
-        previousState = renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, previousState, true);
+        try {
+          previousState = renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, previousState, true);
+        } catch (e) {
+          DebugTool.info('renderHTML error: ' + e);
+        }
       }
 
       return {
