@@ -13,14 +13,14 @@ define('bigscreenplayer/subtitles/renderer',
     var renderHTML = IMSC.renderHTML;
 
     var Renderer = function (id, uri, media) {
-      var interval = 0;
       var outputElement;
       var currentElement;
       var previousState;
       var xml;
       var times;
 
-      var track = TODO_NEED_MEDIA_ELEMENT.addTextTrack('captions');
+      var videoElement = document.getElementsByTagName('video')[0];
+      var track = videoElement.addTextTrack('captions');
       track.mode = 'hidden';
 
       if (!outputElement) {
@@ -45,19 +45,19 @@ define('bigscreenplayer/subtitles/renderer',
               if (req.response) {
                 try {
                   xml = fromXML(req.responseText, function (error) {
-                    times = xml.getTimeEvents();
-
-                    var Cue = window.VTTCue || window.TextTrackCue;
-                    for (var i = 0; i < times.length; i++) {
-                      var cue = new Cue(times[i], times[i], '');
-                      cue.onenter = function () { update(times[i]); };
-                      track.addCue(cue);
-                    }
-
                     DebugTool.info(error);
                   }, function (error) {
                     DebugTool.info(error);
                   });
+
+                  times = xml.getMediaTimeEvents();
+
+                  var Cue = window.VTTCue || window.TextTrackCue;
+                  for (var i = 0; i < times.length; i++) {
+                    var cue = new Cue(times[i], times[i], '');
+                    cue.onenter = function () { update(this.startTime); };
+                    track.addCue(cue);
+                  }
                 } catch (e) {
                   DebugTool.info('Error transforming captions response: ' + e);
                 }
@@ -81,8 +81,6 @@ define('bigscreenplayer/subtitles/renderer',
       }
 
       function start () {
-        interval = setInterval(function () { update(); }, 750);
-
         if (outputElement) {
           outputElement.style.display = 'block';
         }
@@ -92,16 +90,12 @@ define('bigscreenplayer/subtitles/renderer',
         if (outputElement) {
           outputElement.style.display = 'none';
         }
-
-        clearInterval(interval);
       }
 
       function update (time) {
         if (!media) {
           stop();
         }
-
-        // var time = media.getCurrentTime();
 
         // generateISD(tt, offset, errorHandler)
         var isd = generateISD(xml, time);
@@ -110,6 +104,7 @@ define('bigscreenplayer/subtitles/renderer',
         }
 
         currentElement = document.createElement('div');
+        currentElement.id = 'bsp_captions';
         outputElement.appendChild(currentElement);
         // renderHTML(isd, element, imgResolver, eheight, ewidth, displayForcedOnlyMode, errorHandler, previousISDState, enableRollUp)
         previousState = renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, previousState, true);
