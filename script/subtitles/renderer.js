@@ -19,8 +19,8 @@ define('bigscreenplayer/subtitles/renderer',
       var xml;
       var times;
 
-      var videoElement = document.getElementsByTagName('video')[0];
-      var track = videoElement.addTextTrack('captions');
+      var mediaElement = media.getPlayerElement();
+      var track = mediaElement.addTextTrack('captions');
       track.mode = 'hidden';
 
       if (!outputElement) {

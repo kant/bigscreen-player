@@ -406,6 +406,10 @@ define('bigscreenplayer/playbackstrategy/msestrategy',
         }
       }
 
+      function getPlayerElement () {
+        return mediaElement;
+      }
+
       function getSeekableRange () {
         if (mediaPlayer && mediaPlayer.isReady() && windowType !== WindowTypes.STATIC) {
           var dvrInfo = mediaPlayer.getDashMetrics().getCurrentDVRInfo(mediaKind);
@@ -503,6 +507,7 @@ define('bigscreenplayer/playbackstrategy/msestrategy',
           };
         },
         load: load,
+        getPlayerElement: getPlayerElement,
         getSeekableRange: getSeekableRange,
         getCurrentTime: getCurrentTime,
         getDuration: getDuration,
