@@ -89,7 +89,7 @@ define('bigscreenplayer/subtitles/renderer',
       }
 
       function start () {
-        interval = setInterval(function () { update(media.getCurrentTime()); }, 250);
+        interval = setInterval(function () { update(media.getCurrentTime()); }, 750);
         if (outputElement) {
           outputElement.style.display = 'block';
         }
