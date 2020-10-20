@@ -17,11 +17,12 @@ define('bigscreenplayer/subtitles/renderer',
       var currentElement;
       var previousState;
       var xml;
-      var times;
+      // var times;
+      var interval;
 
-      var mediaElement = media.getPlayerElement();
-      var track = mediaElement.addTextTrack('captions');
-      track.mode = 'hidden';
+      // var mediaElement = media.getPlayerElement();
+      // var track = mediaElement.addTextTrack('captions');
+      // track.mode = 'hidden';
 
       if (!outputElement) {
         outputElement = document.createElement('div');
@@ -50,21 +51,21 @@ define('bigscreenplayer/subtitles/renderer',
                     DebugTool.info(error);
                   });
 
-                  times = xml.getMediaTimeEvents();
+                  // times = xml.getMediaTimeEvents();
 
-                  var Cue = window.VTTCue || window.TextTrackCue;
+                  // var Cue = window.VTTCue || window.TextTrackCue;
 
-                  for (var i = 0; i < times.length; i++) {
-                    var cue;
-                    if (times[i + 1]) {
-                      cue = new Cue(times[i], times[i + 1], '');
-                    } else {
-                      cue = new Cue(times[i], times[i], '');
-                    }
-                    cue.onenter = function () { update(this.startTime); };
-                    cue.onexit = function () { removeCaptionElement(); };
-                    track.addCue(cue);
-                  }
+                  // for (var i = 0; i < times.length; i++) {
+                  //   var cue;
+                  //   if (times[i + 1]) {
+                  //     cue = new Cue(times[i], times[i + 1], '');
+                  //   } else {
+                  //     cue = new Cue(times[i], times[i], '');
+                  //   }
+                  //   cue.onenter = function () { update(this.startTime); };
+                  //   cue.onexit = function () { removeCaptionElement(); };
+                  //   track.addCue(cue);
+                  // }
                 } catch (e) {
                   DebugTool.info('Error transforming captions response: ' + e);
                 }
@@ -88,6 +89,7 @@ define('bigscreenplayer/subtitles/renderer',
       }
 
       function start () {
+        interval = setInterval(function () { update(media.getCurrentTime()); }, 250);
         if (outputElement) {
           outputElement.style.display = 'block';
         }
@@ -97,6 +99,8 @@ define('bigscreenplayer/subtitles/renderer',
         if (outputElement) {
           outputElement.style.display = 'none';
         }
+
+        clearInterval(interval);
       }
 
       function removeCaptionElement () {
