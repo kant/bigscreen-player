@@ -15,7 +15,6 @@ define('bigscreenplayer/subtitles/renderer',
     var Renderer = function (id, uri, media) {
       var outputElement;
       var currentElement;
-      var previousState;
       var xml;
       // var times;
       var interval;
@@ -26,7 +25,7 @@ define('bigscreenplayer/subtitles/renderer',
 
       if (!outputElement) {
         outputElement = document.createElement('div');
-        outputElement.id = id;
+        // outputElement.id = id;
         outputElement.style.position = 'absolute';
         outputElement.style.width = '100%';
         outputElement.style.height = '100%';
@@ -128,7 +127,7 @@ define('bigscreenplayer/subtitles/renderer',
         outputElement.appendChild(currentElement);
         // renderHTML(isd, element, imgResolver, eheight, ewidth, displayForcedOnlyMode, errorHandler, previousISDState, enableRollUp)
         try {
-          previousState = renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, previousState, true);
+          renderHTML(isd, currentElement, null, outputElement.clientHeight, outputElement.clientWidth, false, function () {}, null, false);
         } catch (e) {
           DebugTool.info('renderHTML error: ' + e);
         }
