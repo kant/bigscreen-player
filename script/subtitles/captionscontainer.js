@@ -12,7 +12,7 @@ define(
       var subtitlesRenderer;
 
       container.id = 'playerCaptionsContainer';
-      // DOMHelpers.addClass(container, 'playerCaptions');
+      DOMHelpers.addClass(container, 'playerCaptions');
 
       container.style.position = 'absolute';
       container.style.width = '100%';
